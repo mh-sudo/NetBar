@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: macos-14
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set version from tag
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+
+      - name: Build release
+        run: bash NetBar/scripts/build_release.sh ${{ env.VERSION }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: NetBar-${{ env.VERSION }}.zip
+          generate_release_notes: false
+          body: |
+            ## NetBar ${{ github.ref_name }}
+
+            **Real-time network speeds. One glance. Zero bloat.**
+
+            ### Install
+
+            **Homebrew:**
+            ```
+            brew tap mh-sudo/netbar https://github.com/mh-sudo/NetBar
+            brew install --cask netbar
+            ```
+
+            **Manual:** Download the zip, drag to /Applications, run `xattr -cr /Applications/NetBar.app`
+
+            ### System Requirements
+            - macOS 13.0+ (Ventura or later)
+            - Apple Silicon or Intel
+
+            **License:** MIT
+
+      - name: Update Homebrew formula
+        run: |
+          git fetch origin main
+          git checkout main
+          SHA256=$(shasum -a 256 NetBar-${{ env.VERSION }}.zip | awk '{print $1}')
+          sed -i '' "s|url \".*\"|url \"https://github.com/mh-sudo/NetBar/releases/download/v${{ env.VERSION }}/NetBar-${{ env.VERSION }}.zip\"|" Casks/netbar.rb
+          sed -i '' "s|sha256 \".*\"|sha256 \"$SHA256\"|" Casks/netbar.rb
+          sed -i '' "s|version \".*\"|version \"${{ env.VERSION }}\"|" Casks/netbar.rb
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add Casks/netbar.rb
+          git commit -m "Update formula to v${{ env.VERSION }}" || echo "No changes to commit"
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
