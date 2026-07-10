@@ -70,10 +70,12 @@ Upload a file? Watch the speed climb. Download stalling? See it flatline in real
 
 ## Install
 
-### Homebrew (one-liner)
+### Homebrew (one line install, paste and hit enter! )
 
 ```bash
-brew tap mh-sudo/netbar https://github.com/mh-sudo/NetBar && brew install --cask netbar
+brew tap mh-sudo/netbar https://github.com/mh-sudo/NetBar && \
+brew trust mh-sudo/netbar && \
+brew install --cask netbar
 ```
 
 ### Manual
