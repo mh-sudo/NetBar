@@ -70,23 +70,30 @@ Upload a file? Watch the speed climb. Download stalling? See it flatline in real
 
 ## Install
 
-### Homebrew (copy the whole thing, paste and hit enter! )
+### 1. Download
+
+<a href="https://github.com/mh-sudo/NetBar/releases/download/v1.0.0/NetBar-1.0.0.zip">
+  <img src="https://img.shields.io/badge/Download-NetBar%20v1.0.0-blue?style=for-the-badge&logo=apple" alt="Download NetBar">
+</a>
+
+Or go to [Releases](https://github.com/mh-sudo/NetBar/releases) and download `NetBar-1.0.0.zip`.
+
+### 2. Install
+
+Unzip the downloaded file and drag **NetBar.app** into your **Applications** folder.
+
+### 3. Fix macOS security (one time)
+
+macOS will show **"NetBar is damaged and can't be opened"** on first launch because the app is ad-hoc signed. Open **Terminal** and paste this:
 
 ```bash
-brew tap mh-sudo/netbar https://github.com/mh-sudo/NetBar && \
-brew trust mh-sudo/netbar && \
-brew install --cask netbar
+xattr -cr /Applications/NetBar.app
 ```
 
-### Manual
+Then open NetBar normally. You only need to do this once.
 
-Download the latest `.zip` from [Releases](https://github.com/mh-sudo/NetBar/releases) and drag `NetBar.app` into `/Applications`.
-
-> [!IMPORTANT]
-> macOS will block the app on first launch (ad-hoc signed, no Developer ID). Fix it once:
-> ```bash
-> xattr -cr /Applications/NetBar.app
-> ```
+> [!TIP]
+> **Quickest path**: Download → Drag to Applications → Run the `xattr` command → Done. Takes 30 seconds.
 
 ---
 
