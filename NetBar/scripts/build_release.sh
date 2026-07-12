@@ -63,8 +63,9 @@ cd "$EXPORT_PATH"
 ditto -c -k --keepParent "$APP_NAME.app" "../../$ZIP_NAME"
 cd ../../
 
-# Print SHA256 (needed for Homebrew formula)
+# Print SHA256 (needed for Homebrew cask)
 echo ""
 echo "✅ Build complete: $ZIP_NAME"
-echo "📋 SHA256:"
+echo ""
+echo "📋 SHA256 (update Casks/netbar.rb sha256 with this value before tagging the release):"
 shasum -a 256 "$ZIP_NAME"

@@ -1,6 +1,6 @@
 cask "netbar" do
   version "1.0.0"
-  sha256 "a79fa0dda1a8aaee69e929d877dfa4ce6d348f02e6258febb756af0769a8ee88"
+  sha256 "85ddf756942d5709b09a638f345cf017042e4f18568bea41fb935be3a15c7d98"
 
   url "https://github.com/mh-sudo/NetBar/releases/download/v1.0.0/NetBar-1.0.0.zip"
   name "NetBar"
