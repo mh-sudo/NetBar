@@ -17,7 +17,7 @@ mkdir -p "$RESOURCES_DIR"
 # Copy Info.plist
 cp NetBar/Info.plist "$CONTENTS_DIR/Info.plist"
 
-# Copy App Icon
+# Copy App Icon (must have transparent background — see scripts/generate-icon.sh)
 cp NetBar.app/Contents/Resources/AppIcon.icns "$RESOURCES_DIR/AppIcon.icns" 2>/dev/null || echo "⚠️  AppIcon.icns not found, skipping"
 
 # Optional: Set the bundle structure (PkgInfo is recommended for App bundles)
