@@ -33,10 +33,16 @@ jobs:
 
             ### Install
 
-            **Homebrew:**
+            **Homebrew (new users):**
             ```
-            brew tap mh-sudo/netbar https://github.com/mh-sudo/NetBar
+            brew tap mh-sudo/netbar https://github.com/mh-sudo/NetBar && \
+            brew trust mh-sudo/netbar && \
             brew install --cask netbar
+            ```
+
+            **Homebrew (existing users):**
+            ```
+            brew upgrade --cask netbar --force
             ```
 
             **Manual:** Download the zip, drag to /Applications, run `xattr -cr /Applications/NetBar.app`
