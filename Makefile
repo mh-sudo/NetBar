@@ -1,4 +1,4 @@
-VERSION ?= 1.0.5
+VERSION ?= 1.1
 APP_NAME = NetBar
 GITHUB_USER = mh-sudo
 ZIP_NAME = $(APP_NAME)-$(VERSION).zip
