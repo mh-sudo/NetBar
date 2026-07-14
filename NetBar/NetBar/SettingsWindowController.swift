@@ -201,17 +201,21 @@ class SettingsWindowController: NSWindowController {
         footerField.isBordered = false
         footerField.drawsBackground = false
         footerField.alignment = .center
+        let centeredStyle = NSMutableParagraphStyle()
+        centeredStyle.alignment = .center
         let prefix = NSMutableAttributedString(string: "An open-source MIT licensed app by ",
             attributes: [
                 .font: NSFont.systemFont(ofSize: 10, weight: .regular),
-                .foregroundColor: NSColor(white: 0.4, alpha: 1.0)
+                .foregroundColor: NSColor(white: 0.4, alpha: 1.0),
+                .paragraphStyle: centeredStyle
             ])
         let linkAttr = NSMutableAttributedString(string: "MHSUDO",
             attributes: [
                 .font: NSFont.systemFont(ofSize: 10, weight: .medium),
                 .foregroundColor: NSColor(calibratedRed: 0.2, green: 0.6, blue: 1.0, alpha: 1.0),
                 .link: URL(string: "https://github.com/mh-sudo")! as NSURL,
-                .cursor: NSCursor.pointingHand
+                .cursor: NSCursor.pointingHand,
+                .paragraphStyle: centeredStyle
             ])
         prefix.append(linkAttr)
         footerField.attributedStringValue = prefix
