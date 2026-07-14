@@ -129,7 +129,7 @@ class SettingsWindowController: NSWindowController {
         y -= 26
 
         // ── Version ──
-        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.2"
         let vLabel = label("v\(version)", size: 11, weight: .regular, color: NSColor(white: 0.5, alpha: 1.0))
         vLabel.frame = NSRect(x: 0, y: y - 14, width: w, height: 14)
         vLabel.alignment = .center
@@ -195,11 +195,29 @@ class SettingsWindowController: NSWindowController {
         contentView.addSubview(resetBtn)
         y -= 44
 
-        // ── Footer ──
-        let footer = label("© MHSUDO", size: 10, weight: .regular, color: NSColor(white: 0.4, alpha: 1.0))
-        footer.frame = NSRect(x: 0, y: 10, width: w, height: 12)
-        footer.alignment = .center
-        contentView.addSubview(footer)
+        // ── Footer (clickable link) ──
+        let footerField = NSTextField(frame: NSRect(x: 0, y: 8, width: w, height: 16))
+        footerField.isEditable = false
+        footerField.isBordered = false
+        footerField.drawsBackground = false
+        footerField.alignment = .center
+        let prefix = NSMutableAttributedString(string: "An open-source MIT licensed app by ",
+            attributes: [
+                .font: NSFont.systemFont(ofSize: 10, weight: .regular),
+                .foregroundColor: NSColor(white: 0.4, alpha: 1.0)
+            ])
+        let linkAttr = NSMutableAttributedString(string: "MHSUDO",
+            attributes: [
+                .font: NSFont.systemFont(ofSize: 10, weight: .medium),
+                .foregroundColor: NSColor(calibratedRed: 0.2, green: 0.6, blue: 1.0, alpha: 1.0),
+                .link: URL(string: "https://github.com/mh-sudo")! as NSURL,
+                .cursor: NSCursor.pointingHand
+            ])
+        prefix.append(linkAttr)
+        footerField.attributedStringValue = prefix
+        footerField.allowsEditingTextAttributes = true
+        footerField.isSelectable = true
+        contentView.addSubview(footerField)
     }
 
     // MARK: - Helpers
