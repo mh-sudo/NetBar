@@ -41,12 +41,11 @@ class DataUsageWindowController: NSWindowController {
     private var uploadValueLabel: NSTextField!
     private var downloadValueLabel: NSTextField!
     private var totalLabel: NSTextField!
-    private var lastUpdatedLabel: NSTextField!
     private var scrollDocView: NSView!
 
     convenience init(tracker: DataUsageTracker) {
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 380, height: 540),
+            contentRect: NSRect(x: 0, y: 0, width: 380, height: 640),
             styleMask: [.titled, .closable, .fullSizeContentView],
             backing: .buffered,
             defer: false
@@ -157,7 +156,7 @@ class DataUsageWindowController: NSWindowController {
         contentView.addSubview(mhLabel)
         y -= 24
 
-        let scrollFrame = NSRect(x: padding, y: 34, width: w - padding * 2, height: y - 40)
+        let scrollFrame = NSRect(x: padding, y: 8, width: w - padding * 2, height: y - 8)
         let scrollView = NSScrollView(frame: scrollFrame)
         scrollView.hasVerticalScroller = false
         scrollView.drawsBackground = false
@@ -167,10 +166,6 @@ class DataUsageWindowController: NSWindowController {
         scrollDocView.wantsLayer = true
         scrollView.documentView = scrollDocView
         contentView.addSubview(scrollView)
-
-        lastUpdatedLabel = lbl("Collecting data...", size: 10, weight: .regular, color: NSColor(white: 0.4, alpha: 1.0))
-        lastUpdatedLabel.frame = NSRect(x: padding, y: 8, width: w - padding * 2, height: 14)
-        contentView.addSubview(lastUpdatedLabel)
     }
 
     private func selectPeriod(_ period: UsagePeriod) {
@@ -186,10 +181,6 @@ class DataUsageWindowController: NSWindowController {
         uploadValueLabel.stringValue = formatBytes(data.bytesOut)
         downloadValueLabel.stringValue = formatBytes(data.bytesIn)
         totalLabel.stringValue = "Total: \(formatBytes(data.total))"
-
-        let formatter = DateFormatter()
-        formatter.dateFormat = "h:mm a"
-        lastUpdatedLabel.stringValue = "Last updated: \(formatter.string(from: Date()))"
 
         buildMonthlyList()
     }
