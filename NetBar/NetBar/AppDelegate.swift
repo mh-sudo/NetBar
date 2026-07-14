@@ -10,7 +10,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var ipFetcher: IPFlagFetcher!
     var ipMenuItem: NSMenuItem!
     var settingsController: SettingsWindowController?
+    var dataUsageController: DataUsageWindowController?
     var networkChangeDetector: NetworkChangeDetector!
+    var dataUsageTracker: DataUsageTracker!
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Create the status item with variable length initially
@@ -34,6 +36,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         let refreshItem = NSMenuItem(title: "Refresh IP", action: #selector(refreshIP), keyEquivalent: "r")
         menu.addItem(refreshItem)
+        
+        menu.addItem(NSMenuItem.separator())
+        
+        let dataUsageItem = NSMenuItem(title: "Data Usage...", action: #selector(openDataUsage), keyEquivalent: "d")
+        menu.addItem(dataUsageItem)
         
         menu.addItem(NSMenuItem.separator())
         
@@ -77,6 +84,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         networkChangeDetector.start()
         
+        // Start data usage tracking
+        dataUsageTracker = DataUsageTracker()
+        dataUsageTracker.start()
+        
         // Start monitoring immediately
         startNetworkMonitor()
         
@@ -112,6 +123,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         NSApp.activate(ignoringOtherApps: true)
         settingsController?.window?.makeKeyAndOrderFront(nil)
+    }
+
+    @objc func openDataUsage() {
+        if dataUsageController == nil {
+            dataUsageController = DataUsageWindowController(tracker: dataUsageTracker)
+        }
+        NSApp.activate(ignoringOtherApps: true)
+        dataUsageController?.window?.makeKeyAndOrderFront(nil)
     }
 
     @objc func refreshIP() {
