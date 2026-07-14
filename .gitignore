@@ -4,3 +4,5 @@ build/
 *.DS_Store
 project-map.md
 .mimocode/
+NetBar/NetBar.app/
+*.zip
