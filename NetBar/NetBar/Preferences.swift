@@ -58,6 +58,15 @@ class Preferences {
         }
     }
     
+    // Lock monitoring to a specific network interface (nil = all interfaces)
+    var lockedInterface: String? {
+        get { defaults.string(forKey: "lockedInterface") }
+        set {
+            defaults.set(newValue, forKey: "lockedInterface")
+            notify()
+        }
+    }
+    
     // We handle Launch At Login via SMAppService directly in AppDelegate/Settings,
     // but we can store the theoretical state here if needed.
     

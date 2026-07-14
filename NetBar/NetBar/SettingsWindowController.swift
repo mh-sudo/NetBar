@@ -80,10 +80,11 @@ class SettingsWindowController: NSWindowController {
     private var singleLineToggle: ToggleSwitch!
     private var ipToggle: ToggleSwitch!
     private var loginToggle: ToggleSwitch!
+    private var interfaceDropdown: NSPopUpButton!
 
     convenience init() {
         let windowWidth: CGFloat = 380
-        let windowHeight: CGFloat = 560
+        let windowHeight: CGFloat = 660
 
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: windowWidth, height: windowHeight),
@@ -184,6 +185,44 @@ class SettingsWindowController: NSWindowController {
         contentView.addSubview(dropdown)
         y -= 36
 
+        // ── Monitoring Section (Interface Lock) ──
+        y -= 8
+        contentView.addSubview(makeSep(y: y))
+        y -= 16
+
+        let monLabel = label("MONITORING", size: 10, weight: .medium, color: NSColor(white: 0.45, alpha: 1.0))
+        monLabel.frame = NSRect(x: padding, y: y - 12, width: 200, height: 12)
+        contentView.addSubview(monLabel)
+        y -= 26
+
+        let intLabel = label("Lock Interface", size: 13, weight: .regular, color: NSColor(white: 0.85, alpha: 1.0))
+        intLabel.frame = NSRect(x: padding, y: y - 16, width: 200, height: 16)
+        contentView.addSubview(intLabel)
+
+        let interfaces = getMonitoredInterfaces()
+        interfaceDropdown = NSPopUpButton(frame: NSRect(x: w - padding - 160, y: y - 22, width: 160, height: 24))
+        interfaceDropdown.font = NSFont.systemFont(ofSize: 11)
+        for (displayName, rawName) in interfaces {
+            let item = NSMenuItem(title: displayName, action: nil, keyEquivalent: "")
+            item.representedObject = rawName
+            interfaceDropdown.menu?.addItem(item)
+        }
+        interfaceDropdown.target = self
+        interfaceDropdown.action = #selector(interfaceChanged)
+        let locked = prefs.lockedInterface
+        if let locked = locked {
+            for (i, item) in (interfaceDropdown.menu?.items ?? []).enumerated() {
+                if item.representedObject as? String == locked {
+                    interfaceDropdown.selectItem(at: i)
+                    break
+                }
+            }
+        } else {
+            interfaceDropdown.selectItem(at: 0)
+        }
+        contentView.addSubview(interfaceDropdown)
+        y -= 42
+
         // ── Reset Button ──
         y -= 8
         let resetBtn = NSButton(frame: NSRect(x: w - padding - 120, y: y - 28, width: 120, height: 28))
@@ -257,6 +296,53 @@ class SettingsWindowController: NSWindowController {
     }
 
     // MARK: - Actions
+
+    @objc private func interfaceChanged() {
+        let selected = interfaceDropdown.selectedItem?.representedObject as? String
+        Preferences.shared.lockedInterface = selected
+    }
+
+    private func getMonitoredInterfaces() -> [(String, String?)] {
+        var interfaces: [(String, String?)] = [("Auto (all interfaces)", nil)]
+        var seen = Set<String>()
+
+        var ifaddr: UnsafeMutablePointer<ifaddrs>? = nil
+        guard getifaddrs(&ifaddr) == 0, let firstAddr = ifaddr else { return interfaces }
+        defer { freeifaddrs(ifaddr) }
+
+        for ptr in sequence(first: firstAddr, next: { $0.pointee.ifa_next }) {
+            let flags = Int32(ptr.pointee.ifa_flags)
+            let isUp = (flags & IFF_UP) == IFF_UP
+            let isLoopback = (flags & IFF_LOOPBACK) == IFF_LOOPBACK
+            if isUp && !isLoopback {
+                guard let namePtr = ptr.pointee.ifa_name else { continue }
+                let name = String(cString: namePtr)
+                let relevant = strncmp(namePtr, "en", 2) == 0 ||
+                    strncmp(namePtr, "utun", 4) == 0 ||
+                    strncmp(namePtr, "pdp_ip", 6) == 0
+                if relevant && !seen.contains(name) {
+                    seen.insert(name)
+                    let displayName = friendlyName(for: name)
+                    interfaces.append((displayName, name))
+                }
+            }
+        }
+
+        interfaces.sort { a, b in
+            if a.1 == nil { return true }
+            if b.1 == nil { return false }
+            return (a.1 ?? "") < (b.1 ?? "")
+        }
+
+        return interfaces
+    }
+
+    private func friendlyName(for name: String) -> String {
+        if name.hasPrefix("en") { return "Network (\(name))" }
+        if name.hasPrefix("utun") { return "VPN Tunnel (\(name))" }
+        if name.hasPrefix("pdp_ip") { return "Cellular (\(name))" }
+        return name
+    }
 
     private func handleLoginToggle(_ isOn: Bool) {
         do {

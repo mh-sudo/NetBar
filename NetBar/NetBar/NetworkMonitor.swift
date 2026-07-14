@@ -64,6 +64,8 @@ class NetworkMonitor {
         var bytesIn: UInt64 = 0
         var bytesOut: UInt64 = 0
         
+        let locked = Preferences.shared.lockedInterface
+        
         var ifaddr: UnsafeMutablePointer<ifaddrs>? = nil
         guard getifaddrs(&ifaddr) == 0 else { return (0, 0) }
         guard let firstAddr = ifaddr else { return (0, 0) }
@@ -80,15 +82,23 @@ class NetworkMonitor {
                 
                 // Read from AF_LINK layer which contains standard network stats
                 if addrFamily == UInt8(AF_LINK) {
-                    let namePtr = ptr.pointee.ifa_name
-                    if strncmp(namePtr, "en", 2) == 0 || 
-                       strncmp(namePtr, "utun", 4) == 0 || 
-                       strncmp(namePtr, "pdp_ip", 6) == 0 {
-                        // Cast ifa_data to if_data
-                        if let networkData = ptr.pointee.ifa_data?.assumingMemoryBound(to: if_data.self) {
-                            bytesIn += UInt64(networkData.pointee.ifi_ibytes)
-                            bytesOut += UInt64(networkData.pointee.ifi_obytes)
+                    guard let namePtr = ptr.pointee.ifa_name else { continue }
+                    let name = String(cString: namePtr)
+                    
+                    if let locked = locked {
+                        if name != locked { continue }
+                    } else {
+                        if !(strncmp(namePtr, "en", 2) == 0 ||
+                             strncmp(namePtr, "utun", 4) == 0 ||
+                             strncmp(namePtr, "pdp_ip", 6) == 0) {
+                            continue
                         }
+                    }
+                    
+                    // Cast ifa_data to if_data
+                    if let networkData = ptr.pointee.ifa_data?.assumingMemoryBound(to: if_data.self) {
+                        bytesIn += UInt64(networkData.pointee.ifi_ibytes)
+                        bytesOut += UInt64(networkData.pointee.ifi_obytes)
                     }
                 }
             }
