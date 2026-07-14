@@ -51,9 +51,12 @@ swiftc -o "$MACOS_DIR/NetBar_arm64" \
     NetBar/NetBar/IPFlagFetcher.swift \
     NetBar/NetBar/MenuBarView.swift \
     NetBar/NetBar/NetworkChangeDetector.swift \
+    NetBar/NetBar/DataUsageTracker.swift \
+    NetBar/NetBar/DataUsageWindowController.swift \
     -framework Cocoa \
     -framework Foundation \
     -framework SystemConfiguration \
+    -framework Network \
     -target arm64-apple-macos13.0
 
 echo "Compiling x86_64 slice..."
@@ -66,9 +69,12 @@ swiftc -o "$MACOS_DIR/NetBar_x86_64" \
     NetBar/NetBar/IPFlagFetcher.swift \
     NetBar/NetBar/MenuBarView.swift \
     NetBar/NetBar/NetworkChangeDetector.swift \
+    NetBar/NetBar/DataUsageTracker.swift \
+    NetBar/NetBar/DataUsageWindowController.swift \
     -framework Cocoa \
     -framework Foundation \
     -framework SystemConfiguration \
+    -framework Network \
     -target x86_64-apple-macos13.0
 
 echo "Creating Universal Binary..."
