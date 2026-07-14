@@ -116,7 +116,8 @@ class SettingsWindowController: NSWindowController {
         let iconSize: CGFloat = 56
         let iconView = NSImageView(frame: NSRect(x: (w - iconSize) / 2, y: y - iconSize, width: iconSize, height: iconSize))
         iconView.image = NSApp.applicationIconImage
-        iconView.imageScaling = .scaleProportionallyDown
+        iconView.imageScaling = .scaleProportionallyUpOrDown
+        iconView.imageFrameStyle = .none
         contentView.addSubview(iconView)
         y -= iconSize + 8
 
