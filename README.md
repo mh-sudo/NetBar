@@ -8,7 +8,7 @@
 
 **Real-time upload and download speeds · VPN country flag detection · 364 KB · Zero dependencies**
 
-[![GitHub Release](https://img.shields.io/g/v/release/mh-sudo/NetBar?style=for-the-badge&color=blue)](https://github.com/mh-sudo/NetBar/releases)
+[![GitHub Release](https://img.shields.io/github/v/release/mh-sudo/NetBar?style=for-the-badge&color=blue)](https://github.com/mh-sudo/NetBar/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg?style=for-the-badge&logo=swift)](https://swift.org)
 [![macOS](https://img.shields.io/badge/macOS-13.0+-black.svg?style=for-the-badge&logo=apple)](https://apple.com/macos)
