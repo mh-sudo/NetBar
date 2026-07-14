@@ -77,6 +77,12 @@ Activity Monitor can show network throughput, but it takes a full window and a c
 
 <p align="center">Settings panel: toggle country flag, arrows, single-line mode, launch at login, refresh rate, and interface lock</p>
 
+<p align="center">
+  <img src="netbar-lock-interface.png" alt="NetBar settings showing the interface lock dropdown for monitoring specific network interfaces" width="420" />
+</p>
+
+<p align="center">Interface lock: monitor Wi-Fi only, VPN only, or all traffic</p>
+
 ---
 
 ## Install
