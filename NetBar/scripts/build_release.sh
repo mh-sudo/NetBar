@@ -27,7 +27,13 @@ mkdir -p "$RESOURCES_DIR"
 cp NetBar/NetBar/Info.plist "$CONTENTS_DIR/Info.plist"
 
 # Copy App Icon (must have transparent background — see scripts/generate-icon.sh)
-cp NetBar/NetBar.app/Contents/Resources/AppIcon.icns "$RESOURCES_DIR/AppIcon.icns" 2>/dev/null || echo "⚠️  AppIcon.icns not found, skipping"
+if [ -f "AppIcon.icns" ]; then
+    cp "AppIcon.icns" "$RESOURCES_DIR/AppIcon.icns"
+elif [ -f "NetBar/NetBar.app/Contents/Resources/AppIcon.icns" ]; then
+    cp "NetBar/NetBar.app/Contents/Resources/AppIcon.icns" "$RESOURCES_DIR/AppIcon.icns"
+else
+    echo "⚠️  AppIcon.icns not found, skipping"
+fi
 
 # PkgInfo
 echo "APPL????" > "$CONTENTS_DIR/PkgInfo"
@@ -35,7 +41,8 @@ echo "APPL????" > "$CONTENTS_DIR/PkgInfo"
 # Compile Swift files
 # Note: Using absolute paths or relative to repository root as needed. 
 # The script is expected to be run from the repository root.
-swiftc -o "$MACOS_DIR/NetBar" \
+echo "Compiling arm64 slice..."
+swiftc -o "$MACOS_DIR/NetBar_arm64" \
     NetBar/NetBar/main.swift \
     NetBar/NetBar/AppDelegate.swift \
     NetBar/NetBar/Preferences.swift \
@@ -48,6 +55,25 @@ swiftc -o "$MACOS_DIR/NetBar" \
     -framework Foundation \
     -framework SystemConfiguration \
     -target arm64-apple-macos13.0
+
+echo "Compiling x86_64 slice..."
+swiftc -o "$MACOS_DIR/NetBar_x86_64" \
+    NetBar/NetBar/main.swift \
+    NetBar/NetBar/AppDelegate.swift \
+    NetBar/NetBar/Preferences.swift \
+    NetBar/NetBar/SettingsWindowController.swift \
+    NetBar/NetBar/NetworkMonitor.swift \
+    NetBar/NetBar/IPFlagFetcher.swift \
+    NetBar/NetBar/MenuBarView.swift \
+    NetBar/NetBar/NetworkChangeDetector.swift \
+    -framework Cocoa \
+    -framework Foundation \
+    -framework SystemConfiguration \
+    -target x86_64-apple-macos13.0
+
+echo "Creating Universal Binary..."
+lipo -create -output "$MACOS_DIR/NetBar" "$MACOS_DIR/NetBar_arm64" "$MACOS_DIR/NetBar_x86_64"
+rm "$MACOS_DIR/NetBar_arm64" "$MACOS_DIR/NetBar_x86_64"
 
 # Ad-hoc sign
 echo "🔏 Ad-hoc signing..."
