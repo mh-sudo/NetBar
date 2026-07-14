@@ -5,4 +5,7 @@ build/
 project-map.md
 .mimocode/
 NetBar/NetBar.app/
+NetBar/NetBar Beta.app/
+NetBar.app/
 *.zip
+.opencode/
