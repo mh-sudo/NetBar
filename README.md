@@ -43,7 +43,7 @@ Activity Monitor can show network throughput, but it takes a full window and a c
 ## Features
 
 | Feature | Description |
-|---|---|---|
+|---|---|
 | Live speed display | Upload and download speed refreshes every second, right in the menu bar |
 | Country flag detection | See which country your IP resolves to for an instant VPN sanity check |
 | Data usage tracking | See how much data you've used in the last hour, day, week, or month. 12-month history with monthly breakdown |
