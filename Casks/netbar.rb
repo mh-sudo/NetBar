@@ -1,8 +1,8 @@
 cask "netbar" do
-  version "1.0.5"
-  sha256 "6dfd68af282a862c854d06b4672cc02bddbd6b88de87134e1eba2e99bfaf1903"
+  version "1.1"
+  sha256 "737c9b0ed5eaf3097bc86474de8b286d16c9320086f7baa3f3c29fded4968833"
 
-  url "https://github.com/mh-sudo/NetBar/releases/download/v1.0.5/NetBar-1.0.5.zip"
+  url "https://github.com/mh-sudo/NetBar/releases/download/v1.1/NetBar-1.1.zip"
   name "NetBar"
   desc "Minimalist menubar app showing network speed and IP country flag"
   homepage "https://github.com/mh-sudo/NetBar"
