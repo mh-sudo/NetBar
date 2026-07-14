@@ -6,7 +6,7 @@
 
 ### A free, open-source network speed monitor for your macOS menu bar
 
-**Real-time upload and download speeds · VPN country flag detection · 364 KB · Zero dependencies**
+**Real-time upload and download speeds · VPN country flag detection · Data usage tracking · Zero dependencies**
 
 [![GitHub Release](https://img.shields.io/github/v/release/mh-sudo/NetBar?style=for-the-badge&color=blue)](https://github.com/mh-sudo/NetBar/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
@@ -21,13 +21,7 @@
 
 ## What is NetBar?
 
-NetBar is a lightweight macOS menu bar app that shows your real-time internet speed and the country flag of your current IP address. No dashboard, no window. Just the menu bar.
-
-If you've searched for a network speed monitor for Mac, a menu bar bandwidth monitor, or a lightweight alternative to Activity Monitor's Network tab, this is what you were looking for.
-
-<p align="center">
-  <img src="netbar-menubar view.png" alt="NetBar showing live upload and download speed in the macOS menu bar" width="600" />
-</p>
+NetBar is a lightweight macOS menu bar app that shows your real-time internet speed and the country flag of your current IP address. It also tracks your data usage across hours, days, weeks, and months with built-in monthly history.
 
 ---
 
@@ -49,19 +43,31 @@ Activity Monitor can show network throughput, but it takes a full window and a c
 ## Features
 
 | Feature | Description |
-|---|---|
+|---|---|---|
 | Live speed display | Upload and download speed refreshes every second, right in the menu bar |
 | Country flag detection | See which country your IP resolves to for an instant VPN sanity check |
+| Data usage tracking | See how much data you've used in the last hour, day, week, or month. 12-month history with monthly breakdown |
 | Triple-layer VPN detection | Combines `SCDynamicStore`, `NWPathMonitor`, and interface polling to catch VPN/network transitions other menu bar apps miss |
 | Customizable layout | Single-line, dual-line, upload-only, or download-only display |
 | Launch at login | Set it once and forget it's there |
-| 364 KB | About 10x smaller than paid alternatives: pure Swift, native AppKit, zero third-party dependencies |
 | 100% open source | MIT licensed. Read the code, fork it, audit it yourself |
-| No telemetry | The only network request NetBar makes is the IP lookup for the flag. No analytics, no tracking, no accounts |
+| No telemetry | The only network requests NetBar makes are the IP lookup for the flag. No analytics, no tracking, no accounts |
 
 ---
 
 ## Screenshots
+
+<p align="center">
+  <img src="netbar-menubar view.png" alt="NetBar showing live upload and download speed in the macOS menu bar" width="600" />
+</p>
+
+<p align="center">Live speed display in the menu bar with country flag</p>
+
+<p align="center">
+  <img src="netbar-data-usage.png" alt="NetBar data usage dashboard showing hourly, daily, weekly, and monthly network data consumption" width="420" />
+</p>
+
+<p align="center">Data usage dashboard: 1H, 1D, 1W, 1M views with 12-month history</p>
 
 <p align="center">
   <img src="netbar-settings.png" alt="NetBar settings window showing appearance and behavior options on macOS" width="420" />
@@ -112,10 +118,11 @@ Homebrew 6.0+ requires third-party taps to be explicitly trusted before running 
 | | NetBar | Typical paid menu bar monitor |
 |---|---|---|
 | Price | Free, open source | $2.99+ |
-| App size | 364 KB | 2–4 MB |
+| App size | Under 500 KB | 2–4 MB |
 | macOS required | 13.0+ (Ventura) | Often latest only |
 | Live menu bar speed | Yes | Yes |
 | Country flag / VPN check | Yes, built in | Sometimes, as add-on |
+| Data usage tracking | Yes, 1H/1D/1W/1M + 12-month history | Rarely, if ever |
 | Instant VPN transition detection | Yes, triple layer | Usually single layer or none |
 | Open source and auditable | Yes | No |
 | Telemetry-free | Yes | Varies |
@@ -129,6 +136,8 @@ Speed measurement polls `getifaddrs()` system counters every second and calculat
 IP geolocation races five providers concurrently (ip-api.com, ipapi.co, country.is, ipinfo.io, ipwho.is); first response wins. Ephemeral lookups, zero caching, zero accounts.
 
 Network change detection uses three independent layers (`SCDynamicStore` Darwin notifications, `NWPathMonitor`, and interface polling with 0.5s debounce) to reliably catch VPN transitions that single-layer detection often misses.
+
+Data usage is tracked by sampling the same system counters every 3 minutes and storing cumulative snapshots on disk. The dashboard computes deltas on the fly for any time window and keeps a rolling 12-month archive.
 
 The only outbound request NetBar ever makes is the IP lookup for the flag. No analytics SDKs, no crash reporters phoning home, no accounts.
 
@@ -150,8 +159,9 @@ Click "Refresh IP" in the dropdown. If you just switched VPN servers, give it a 
 ## Roadmap
 
 - [ ] Lock monitoring to a specific network interface (track VPN traffic separately)
-- [ ] Data cap alerts (daily limit + notification)
-- [ ] Speed history popup graph
+- [x] Data usage tracking — hour, day, week, and month views with 12-month history
+- [ ] Data cap alerts (usage threshold + notification)
+- [ ] Wi-Fi SSID display in menu bar
 
 Have an idea? [Open an issue](https://github.com/mh-sudo/NetBar/issues) or send a PR. Contributions welcome.
 
