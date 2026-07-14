@@ -6,7 +6,7 @@
 
 ### A free, open-source network speed monitor for your macOS menu bar
 
-**Real-time upload and download speeds · VPN country flag detection · Data usage tracking · Zero dependencies**
+**Real-time upload and download speeds · VPN country flag detection · Data usage tracking · Interface lock · Zero dependencies**
 
 [![GitHub Release](https://img.shields.io/github/v/release/mh-sudo/NetBar?style=for-the-badge&color=blue)](https://github.com/mh-sudo/NetBar/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
@@ -32,6 +32,7 @@ Activity Monitor can show network throughput, but it takes a full window and a c
 - Uploading a file? Watch the number climb in real time.
 - Download stalled? See it flatline instantly.
 - Just connected to a VPN? The country flag updates in under a second so you know if you're routing through the right region.
+- Tracking VPN data separately? Lock monitoring to your `utun` interface so only tunnel traffic counts.
 - On sketchy hotel or airport Wi-Fi? Check throughput before joining a call.
 
 <p align="center">
@@ -47,6 +48,7 @@ Activity Monitor can show network throughput, but it takes a full window and a c
 | Live speed display | Upload and download speed refreshes every second, right in the menu bar |
 | Country flag detection | See which country your IP resolves to for an instant VPN sanity check |
 | Data usage tracking | See how much data you've used in the last hour, day, week, or month. 12-month history with monthly breakdown |
+| Interface lock | Lock monitoring to a single network interface (e.g. your VPN tunnel) to track specific traffic separately |
 | Triple-layer VPN detection | Combines `SCDynamicStore`, `NWPathMonitor`, and interface polling to catch VPN/network transitions other menu bar apps miss |
 | Customizable layout | Single-line, dual-line, upload-only, or download-only display |
 | Launch at login | Set it once and forget it's there |
@@ -73,7 +75,7 @@ Activity Monitor can show network throughput, but it takes a full window and a c
   <img src="netbar-settings.png" alt="NetBar settings window showing appearance and behavior options on macOS" width="420" />
 </p>
 
-<p align="center">Settings panel: toggle country flag, arrows, single-line mode, launch at login, and refresh rate</p>
+<p align="center">Settings panel: toggle country flag, arrows, single-line mode, launch at login, refresh rate, and interface lock</p>
 
 ---
 
@@ -106,7 +108,7 @@ Homebrew 6.0+ requires third-party taps to be explicitly trusted before running 
 ## Who it's for
 
 - Developers: Is `npm install` actually downloading, or did it hang? Is your deploy sending data? Check without opening a terminal.
-- VPN users: Switch servers and confirm you're routed correctly in under a second. No more "wait, am I actually in Tokyo?"
+- VPN users: Switch servers and confirm you're routed correctly in under a second. Lock monitoring to a VPN interface to track only tunnel traffic — great for metered or capped VPN services.
 - Remote workers: Check real throughput before joining a video call on unfamiliar Wi-Fi.
 - Anyone on a metered connection: Tethering from your phone? Watch exactly how much data is moving.
 - Older Macs: Runs on macOS 13 (Ventura) and up, including Intel Macs. No need for the latest hardware.
@@ -131,7 +133,7 @@ Homebrew 6.0+ requires third-party taps to be explicitly trusted before running 
 
 ## Under the hood
 
-Speed measurement polls `getifaddrs()` system counters every second and calculates byte deltas across `en*` (Wi-Fi), `utun*` (VPN), and `pdp_ip*` (cellular) interfaces. No packet sniffing, no elevated permissions.
+Speed measurement polls `getifaddrs()` system counters every second and calculates byte deltas across `en*` (Wi-Fi), `utun*` (VPN), and `pdp_ip*` (cellular) interfaces. Use **interface lock** in Settings to filter tracking to a single interface. No packet sniffing, no elevated permissions.
 
 IP geolocation races five providers concurrently (ip-api.com, ipapi.co, country.is, ipinfo.io, ipwho.is); first response wins. Ephemeral lookups, zero caching, zero accounts.
 
@@ -158,7 +160,7 @@ Click "Refresh IP" in the dropdown. If you just switched VPN servers, give it a 
 
 ## Roadmap
 
-- [ ] Lock monitoring to a specific network interface (track VPN traffic separately)
+- [x] Lock monitoring to a specific network interface (track VPN traffic separately)
 - [x] Data usage tracking — hour, day, week, and month views with 12-month history
 - [ ] Data cap alerts (usage threshold + notification)
 - [ ] Wi-Fi SSID display in menu bar
