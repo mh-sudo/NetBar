@@ -44,6 +44,7 @@ swiftc -o "$MACOS_DIR/NetBar" \
     NetBar/MenuBarView.swift \
     NetBar/DataUsageTracker.swift \
     NetBar/DataUsageWindowController.swift \
+    NetBar/NetworkInterfaceReader.swift \
     -framework Cocoa \
     -framework Foundation \
     -framework SystemConfiguration \

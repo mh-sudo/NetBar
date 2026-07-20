@@ -199,7 +199,8 @@ class DataUsageWindowController: NSWindowController {
 
         let rowHeight: CGFloat = 26
         let totalH = CGFloat(history.count) * rowHeight
-        scrollDocView.frame.size.height = max(totalH, scrollDocView.superview!.bounds.height)
+        let visibleH = scrollDocView.superview?.bounds.height ?? scrollDocView.bounds.height
+        scrollDocView.frame.size.height = max(totalH, visibleH)
 
         let displayMonth: (String) -> String = { raw in
             let parts = raw.split(separator: "-")

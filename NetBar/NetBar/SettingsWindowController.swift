@@ -276,7 +276,8 @@ class SettingsWindowController: NSWindowController {
     }
 
     private func makeSep(y: CGFloat) -> NSView {
-        let sep = NSView(frame: NSRect(x: 0, y: y, width: window!.contentView!.bounds.width, height: 1))
+        let sepWidth = window?.contentView?.bounds.width ?? 0
+        let sep = NSView(frame: NSRect(x: 0, y: y, width: sepWidth, height: 1))
         sep.wantsLayer = true
         sep.layer?.backgroundColor = NSColor(white: 1.0, alpha: 0.08).cgColor
         return sep
@@ -302,46 +303,9 @@ class SettingsWindowController: NSWindowController {
         Preferences.shared.lockedInterface = selected
     }
 
+    // MARK: - Interface list (delegates to NetworkInterfaceReader)
     private func getMonitoredInterfaces() -> [(String, String?)] {
-        var interfaces: [(String, String?)] = [("Auto (all interfaces)", nil)]
-        var seen = Set<String>()
-
-        var ifaddr: UnsafeMutablePointer<ifaddrs>? = nil
-        guard getifaddrs(&ifaddr) == 0, let firstAddr = ifaddr else { return interfaces }
-        defer { freeifaddrs(ifaddr) }
-
-        for ptr in sequence(first: firstAddr, next: { $0.pointee.ifa_next }) {
-            let flags = Int32(ptr.pointee.ifa_flags)
-            let isUp = (flags & IFF_UP) == IFF_UP
-            let isLoopback = (flags & IFF_LOOPBACK) == IFF_LOOPBACK
-            if isUp && !isLoopback {
-                guard let namePtr = ptr.pointee.ifa_name else { continue }
-                let name = String(cString: namePtr)
-                let relevant = strncmp(namePtr, "en", 2) == 0 ||
-                    strncmp(namePtr, "utun", 4) == 0 ||
-                    strncmp(namePtr, "pdp_ip", 6) == 0
-                if relevant && !seen.contains(name) {
-                    seen.insert(name)
-                    let displayName = friendlyName(for: name)
-                    interfaces.append((displayName, name))
-                }
-            }
-        }
-
-        interfaces.sort { a, b in
-            if a.1 == nil { return true }
-            if b.1 == nil { return false }
-            return (a.1 ?? "") < (b.1 ?? "")
-        }
-
-        return interfaces
-    }
-
-    private func friendlyName(for name: String) -> String {
-        if name.hasPrefix("en") { return "Network (\(name))" }
-        if name.hasPrefix("utun") { return "VPN Tunnel (\(name))" }
-        if name.hasPrefix("pdp_ip") { return "Cellular (\(name))" }
-        return name
+        NetworkInterfaceReader.activeInterfaces()
     }
 
     private func handleLoginToggle(_ isOn: Bool) {

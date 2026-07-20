@@ -52,8 +52,10 @@ class DataUsageTracker {
 
     private func tick() {
         let (bytesIn, bytesOut) = getNetworkBytes()
-        guard bytesIn > 0 || bytesOut > 0 else { return }
-
+        // Record a baseline snapshot even when zero (e.g. right after reboot),
+        // so the first interval after a reset has a starting point. Skip only
+        // if both counters are zero AND we already have recent snapshots —
+        // otherwise we'd miss the legitimate "all-zero baseline" tick.
         snapshots.append((date: Date(), bytesIn: bytesIn, bytesOut: bytesOut))
         pruneOldSnapshots()
         saveToDisk()
@@ -64,29 +66,49 @@ class DataUsageTracker {
     }
 
     func usage(for period: UsagePeriod) -> UsageData {
-        let now = Date()
-        let cutoff: Date
-        switch period {
-        case .lastHour:  cutoff = now.addingTimeInterval(-3600)
-        case .lastDay:   cutoff = now.addingTimeInterval(-86400)
-        case .lastWeek:  cutoff = now.addingTimeInterval(-604800)
-        case .lastMonth: cutoff = now.addingTimeInterval(-2592000)
-        }
+        // Serialize against the writer (tick() / pruneOldSnapshots() run on
+        // `queue`). Reads are cheap (filter + small array iterate), so a
+        // blocking sync is fine and prevents the data race where the main
+        // thread iterates an array being mutated on the background queue.
+        queue.sync {
+            let now = Date()
+            let cutoff: Date
+            switch period {
+            case .lastHour:  cutoff = now.addingTimeInterval(-3600)
+            case .lastDay:   cutoff = now.addingTimeInterval(-86400)
+            case .lastWeek:  cutoff = now.addingTimeInterval(-604800)
+            case .lastMonth: cutoff = now.addingTimeInterval(-2592000)
+            }
 
-        let filtered = snapshots.filter { $0.date >= cutoff }
-        guard let oldest = filtered.first, let newest = filtered.last else {
-            return UsageData(bytesIn: 0, bytesOut: 0)
-        }
+            let filtered = snapshots.filter { $0.date >= cutoff }
+            guard filtered.count >= 2 else {
+                return UsageData(bytesIn: 0, bytesOut: 0)
+            }
 
-        let deltaIn = newest.bytesIn >= oldest.bytesIn ? newest.bytesIn - oldest.bytesIn : 0
-        let deltaOut = newest.bytesOut >= oldest.bytesOut ? newest.bytesOut - oldest.bytesOut : 0
-        return UsageData(bytesIn: deltaIn, bytesOut: deltaOut)
+            // Pair-wise delta accumulation across the period. When a counter
+            // reset happens mid-period (reboot / sleep / interface re-init),
+            // the snapshot after the reset is treated as the new baseline for
+            // the next interval — we attribute its reading to that interval
+            // instead of zeroing the entire period's usage.
+            var deltaIn: UInt64 = 0
+            var deltaOut: UInt64 = 0
+            for i in 1..<filtered.count {
+                let prev = filtered[i - 1]
+                let cur = filtered[i]
+                deltaIn  += cur.bytesIn  < prev.bytesIn  ? cur.bytesIn  : cur.bytesIn  - prev.bytesIn
+                deltaOut += cur.bytesOut < prev.bytesOut ? cur.bytesOut : cur.bytesOut - prev.bytesOut
+            }
+            return UsageData(bytesIn: deltaIn, bytesOut: deltaOut)
+        }
     }
 
     var monthlyHistory: [MonthlyUsage] {
-        monthlyArchive
-            .map { MonthlyUsage(month: $0.key, bytesIn: $0.value.bytesIn, bytesOut: $0.value.bytesOut) }
-            .sorted { $0.month > $1.month }
+        // Serialize against the writer for the same reason as usage(for:).
+        queue.sync {
+            monthlyArchive
+                .map { MonthlyUsage(month: $0.key, bytesIn: $0.value.bytesIn, bytesOut: $0.value.bytesOut) }
+                .sorted { $0.month > $1.month }
+        }
     }
 
     // MARK: - Pruning
@@ -108,9 +130,20 @@ class DataUsageTracker {
             for (monthKey, monthSnapshots) in grouped {
                 guard monthKey != currentMonthKey else { continue }
                 let sorted = monthSnapshots.sorted { $0.date < $1.date }
-                guard let first = sorted.first, let last = sorted.last else { continue }
-                let inDelta = last.bytesIn >= first.bytesIn ? last.bytesIn - first.bytesIn : 0
-                let outDelta = last.bytesOut >= first.bytesOut ? last.bytesOut - first.bytesOut : 0
+                guard sorted.count >= 2 else { continue }
+
+                // Pair-wise delta accumulation across the month. Same
+                // counter-reset handling as usage(for:): a reset mid-month
+                // doesn't zero the whole month; the snapshot after the reset
+                // contributes its own reading to that interval.
+                var inDelta: UInt64 = 0
+                var outDelta: UInt64 = 0
+                for i in 1..<sorted.count {
+                    let prev = sorted[i - 1]
+                    let cur = sorted[i]
+                    inDelta  += cur.bytesIn  < prev.bytesIn  ? cur.bytesIn  : cur.bytesIn  - prev.bytesIn
+                    outDelta += cur.bytesOut < prev.bytesOut ? cur.bytesOut : cur.bytesOut - prev.bytesOut
+                }
                 if inDelta > 0 || outDelta > 0 {
                     monthlyArchive[monthKey] = (bytesIn: inDelta, bytesOut: outDelta)
                 }
@@ -130,43 +163,7 @@ class DataUsageTracker {
     // MARK: - Network Bytes
 
     private func getNetworkBytes() -> (UInt64, UInt64) {
-        var bytesIn: UInt64 = 0
-        var bytesOut: UInt64 = 0
-
-        let locked = Preferences.shared.lockedInterface
-
-        var ifaddr: UnsafeMutablePointer<ifaddrs>? = nil
-        guard getifaddrs(&ifaddr) == 0 else { return (0, 0) }
-        guard let firstAddr = ifaddr else { return (0, 0) }
-
-        for ptr in sequence(first: firstAddr, next: { $0.pointee.ifa_next }) {
-            let flags = Int32(ptr.pointee.ifa_flags)
-            let isUp = (flags & IFF_UP) == IFF_UP
-            let isLoopback = (flags & IFF_LOOPBACK) == IFF_LOOPBACK
-            if isUp && !isLoopback {
-                if ptr.pointee.ifa_addr.pointee.sa_family == UInt8(AF_LINK) {
-                    guard let namePtr = ptr.pointee.ifa_name else { continue }
-                    let name = String(cString: namePtr)
-
-                    if let locked = locked {
-                        if name != locked { continue }
-                    } else {
-                        if !(strncmp(namePtr, "en", 2) == 0 ||
-                             strncmp(namePtr, "utun", 4) == 0 ||
-                             strncmp(namePtr, "pdp_ip", 6) == 0) {
-                            continue
-                        }
-                    }
-
-                    if let networkData = ptr.pointee.ifa_data?.assumingMemoryBound(to: if_data.self) {
-                        bytesIn += UInt64(networkData.pointee.ifi_ibytes)
-                        bytesOut += UInt64(networkData.pointee.ifi_obytes)
-                    }
-                }
-            }
-        }
-
-        freeifaddrs(ifaddr)
+        let (bytesIn, bytesOut) = NetworkInterfaceReader.bytes(locked: Preferences.shared.lockedInterface)
         return (bytesIn, bytesOut)
     }
 

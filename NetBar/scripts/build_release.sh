@@ -53,6 +53,7 @@ swiftc -o "$MACOS_DIR/NetBar_arm64" \
     NetBar/NetBar/NetworkChangeDetector.swift \
     NetBar/NetBar/DataUsageTracker.swift \
     NetBar/NetBar/DataUsageWindowController.swift \
+    NetBar/NetBar/NetworkInterfaceReader.swift \
     -framework Cocoa \
     -framework Foundation \
     -framework SystemConfiguration \
@@ -71,6 +72,7 @@ swiftc -o "$MACOS_DIR/NetBar_x86_64" \
     NetBar/NetBar/NetworkChangeDetector.swift \
     NetBar/NetBar/DataUsageTracker.swift \
     NetBar/NetBar/DataUsageWindowController.swift \
+    NetBar/NetBar/NetworkInterfaceReader.swift \
     -framework Cocoa \
     -framework Foundation \
     -framework SystemConfiguration \

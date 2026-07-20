@@ -105,6 +105,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menuBarView.resetCachedWidth() // Recalculate width for new display settings
         updateMenuBarWidth()
         menuBarView.needsDisplay = true
+
+        // If the Settings window is not currently on screen, drop the cached
+        // controller so the next openSettings() rebuilds it from the (possibly
+        // reset) preferences. Avoids showing stale toggle/dropdown state after
+        // "Reset to Defaults" closed the window.
+        if settingsController?.window?.isVisible != true {
+            settingsController = nil
+        }
+        if dataUsageController?.window?.isVisible != true {
+            dataUsageController = nil
+        }
     }
     
     private func updateMenuBarWidth() {

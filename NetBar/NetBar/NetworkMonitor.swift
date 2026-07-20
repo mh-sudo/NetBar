@@ -43,68 +43,30 @@ class NetworkMonitor {
     
     private func tick() {
         let (currentIn, currentOut) = getNetworkBytes()
-        
-        // Calculate deltas (handle counter wrap or network reset gracefully)
-        let deltaIn = currentIn >= lastBytesIn ? currentIn - lastBytesIn : 0
-        let deltaOut = currentOut >= lastBytesOut ? currentOut - lastBytesOut : 0
-        
+
+        // Counter-reset handling: if the current reading is lower than the
+        // previous one, the interface counters were reset (reboot, sleep/wake,
+        // interface re-init). The pre-reset portion of this interval is
+        // unknowable, so treat the current reading as the new baseline going
+        // forward and attribute the current reading itself to this interval
+        // (preserves accumulated bytes instead of discarding them).
+        let deltaIn = currentIn >= lastBytesIn ? currentIn - lastBytesIn : currentIn
+        let deltaOut = currentOut >= lastBytesOut ? currentOut - lastBytesOut : currentOut
+
         lastBytesIn = currentIn
         lastBytesOut = currentOut
-        
+
         let formattedIn = formatSpeed(deltaIn)
         let formattedOut = formatSpeed(deltaOut)
-        
+
         DispatchQueue.main.async { [weak self] in
             self?.onSpeedUpdate?(formattedOut, formattedIn) // Note: up (out), down (in)
         }
     }
     
-    // Reads bytes using getifaddrs
+    // Reads bytes via the shared NetworkInterfaceReader
     private func getNetworkBytes() -> (UInt64, UInt64) {
-        var bytesIn: UInt64 = 0
-        var bytesOut: UInt64 = 0
-        
-        let locked = Preferences.shared.lockedInterface
-        
-        var ifaddr: UnsafeMutablePointer<ifaddrs>? = nil
-        guard getifaddrs(&ifaddr) == 0 else { return (0, 0) }
-        guard let firstAddr = ifaddr else { return (0, 0) }
-        
-        for ptr in sequence(first: firstAddr, next: { $0.pointee.ifa_next }) {
-            let flags = Int32(ptr.pointee.ifa_flags)
-            
-            // Filter only active, non-loopback interfaces
-            let isUp = (flags & IFF_UP) == IFF_UP
-            let isLoopback = (flags & IFF_LOOPBACK) == IFF_LOOPBACK
-            
-            if isUp && !isLoopback {
-                let addrFamily = ptr.pointee.ifa_addr.pointee.sa_family
-                
-                // Read from AF_LINK layer which contains standard network stats
-                if addrFamily == UInt8(AF_LINK) {
-                    guard let namePtr = ptr.pointee.ifa_name else { continue }
-                    let name = String(cString: namePtr)
-                    
-                    if let locked = locked {
-                        if name != locked { continue }
-                    } else {
-                        if !(strncmp(namePtr, "en", 2) == 0 ||
-                             strncmp(namePtr, "utun", 4) == 0 ||
-                             strncmp(namePtr, "pdp_ip", 6) == 0) {
-                            continue
-                        }
-                    }
-                    
-                    // Cast ifa_data to if_data
-                    if let networkData = ptr.pointee.ifa_data?.assumingMemoryBound(to: if_data.self) {
-                        bytesIn += UInt64(networkData.pointee.ifi_ibytes)
-                        bytesOut += UInt64(networkData.pointee.ifi_obytes)
-                    }
-                }
-            }
-        }
-        
-        freeifaddrs(ifaddr)
+        let (bytesIn, bytesOut) = NetworkInterfaceReader.bytes(locked: Preferences.shared.lockedInterface)
         return (bytesIn, bytesOut)
     }
     
