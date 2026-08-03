@@ -9,3 +9,16 @@ NetBar/NetBar Beta.app/
 NetBar.app/
 *.zip
 .opencode/
+/.graphify/
+/.serena/
+
+# Defensive (future-proofing)
+*.dmg
+*.pkg
+*.log
+.idea/
+.vscode/
+DerivedData/
+*.xcuserstate
+*.xcodeproj
+*.xcworkspace
