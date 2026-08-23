@@ -1,9 +1,6 @@
 VERSION ?= 1.2.1
-APP_NAME = NetBar
-GITHUB_USER = mh-sudo
-ZIP_NAME = $(APP_NAME)-$(VERSION).zip
 
-.PHONY: build release update-formula check-release
+.PHONY: build check-release
 
 build:
 	@bash NetBar/scripts/build_release.sh $(VERSION)
@@ -28,25 +25,7 @@ check-release:
 	fi
 	@echo "✅ Preconditions satisfied!"
 
-release: check-release build
-	@echo "🚀 Creating GitHub release v$(VERSION)..."
-	gh release create v$(VERSION) $(ZIP_NAME) \
-	  --title "$(APP_NAME) v$(VERSION)" \
-	  --notes "Release v$(VERSION)"
-	@echo "✅ Release published"
-	@echo ""
-	@echo "⚠️  Now run: make update-formula VERSION=$(VERSION)"
-
-update-formula:
-	@echo "📦 Updating Homebrew formula..."
-	@SHA256=$$(shasum -a 256 $(ZIP_NAME) | awk '{print $$1}'); \
-	sed -i '' "s|url \".*\"|url \"https://github.com/$(GITHUB_USER)/$(APP_NAME)/releases/download/v$(VERSION)/$(ZIP_NAME)\"|" \
-	  Casks/netbar.rb; \
-	sed -i '' "s|sha256 \".*\"|sha256 \"$$SHA256\"|" \
-	  Casks/netbar.rb; \
-	sed -i '' "s|version \".*\"|version \"$(VERSION)\"|" \
-	  Casks/netbar.rb
-	@git add Casks/netbar.rb && \
-	  git commit -m "Update NetBar formula to v$(VERSION)" && \
-	  git push
-	@echo "✅ Formula updated and pushed"
+# Release publishing and formula updates are owned by
+# .github/workflows/release.yml (triggered by the v* tag push).
+# Do NOT add local release/formula targets here — a local zip differs from the
+# CI-built zip (timestamps → different SHA256) and would break the cask checksum.

@@ -2,7 +2,7 @@
 set -e
 
 APP_NAME="NetBar"
-VERSION=${1:-"1.0.4"}
+VERSION=${1:?Usage: bash NetBar/scripts/build_release.sh <version>  (or: make build VERSION=x.y.z)}
 BUILD_DIR="build"
 EXPORT_PATH="$BUILD_DIR/export"
 ZIP_NAME="${APP_NAME}-${VERSION}.zip"
