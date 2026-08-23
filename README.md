@@ -6,14 +6,25 @@
 
 ### A free, open-source network speed monitor for your macOS menu bar
 
-**Real-time upload and download speeds · VPN country flag detection · Data usage tracking · Interface lock · Zero dependencies**
+**Real-time internet speed & bandwidth usage · VPN country flag detection · Data usage tracking · Interface lock · Zero dependencies**
 
+[![GitHub stars](https://img.shields.io/github/stars/mh-sudo/NetBar?style=for-the-badge&color=yellow&label=Stars)](https://github.com/mh-sudo/NetBar/stargazers)
 [![GitHub Release](https://img.shields.io/github/v/release/mh-sudo/NetBar?style=for-the-badge&color=blue)](https://github.com/mh-sudo/NetBar/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg?style=for-the-badge&logo=swift)](https://swift.org)
 [![macOS](https://img.shields.io/badge/macOS-13.0+-black.svg?style=for-the-badge&logo=apple)](https://apple.com/macos)
 
-**[Install](#install) · [Screenshots](#screenshots) · [Features](#features) · [Why NetBar?](#why-netbar) · [FAQ](#faq)**
+**[Install](#install) · [Screenshots](#screenshots) · [Features](#features) · [Compare](#how-netbar-compares) · [FAQ](#faq)**
+
+Install in 30 seconds — macOS 13+ (Ventura), Intel & Apple Silicon, under 500 KB, no special permissions:
+
+```bash
+brew tap mh-sudo/netbar https://github.com/mh-sudo/NetBar && \
+brew trust mh-sudo/netbar && \
+brew install --cask netbar
+```
+
+<sub>Featured in [The Best macOS Bandwidth Monitor Apps](https://ova.productdevbook.com/blog/best-macos-bandwidth-monitor-apps-2026) · No telemetry — the only network request is the IP lookup for the flag</sub>
 
 </div>
 
@@ -21,7 +32,7 @@
 
 ## What is NetBar?
 
-NetBar is a lightweight macOS menu bar app that shows your real-time internet speed and the country flag of your current IP address. It also tracks your data usage across hours, days, weeks, and months with built-in monthly history.
+NetBar is a lightweight macOS menu bar app that shows your real-time internet speed — upload and download bandwidth — and the country flag of your current IP address. It doubles as a bandwidth monitor: track your data usage across hours, days, weeks, and months with built-in 12-month history.
 
 ---
 
@@ -47,7 +58,7 @@ Activity Monitor can show network throughput, but it takes a full window and a c
 |---|---|
 | Live speed display | Upload and download speed refreshes every second, right in the menu bar |
 | Country flag detection | See which country your IP resolves to for an instant VPN sanity check |
-| Data usage tracking | See how much data you've used in the last hour, day, week, or month. 12-month history with monthly breakdown |
+| Bandwidth & data usage tracking | See how much data you've used in the last hour, day, week, or month. 12-month history with monthly breakdown |
 | Interface lock | Lock monitoring to a single network interface (e.g. your VPN tunnel) to track specific traffic separately |
 | Triple-layer VPN detection | Combines `SCDynamicStore`, `NWPathMonitor`, and interface polling to catch VPN/network transitions other menu bar apps miss |
 | Customizable layout | Single-line, dual-line, upload-only, or download-only display |
@@ -109,6 +120,20 @@ Homebrew 6.0+ requires third-party taps to be explicitly trusted before running 
    xattr -cr /Applications/NetBar.app
    ```
 
+### Uninstall
+
+Homebrew handles it cleanly, including leftover config files:
+
+```bash
+brew uninstall --cask netbar && brew untap mh-sudo/netbar
+```
+
+Installed manually? Quit NetBar, delete `/Applications/NetBar.app`, and optionally remove leftovers:
+
+```bash
+rm -rf ~/Library/Application\ Support/NetBar ~/Library/Preferences/com.netbar.app.plist ~/Library/Caches/com.netbar.app
+```
+
 ---
 
 ## Who it's for
@@ -121,7 +146,15 @@ Homebrew 6.0+ requires third-party taps to be explicitly trusted before running 
 
 ---
 
-## NetBar vs. paid alternatives
+## How NetBar compares
+
+**vs. [Stats](https://github.com/exelban/stats)** — Stats is an excellent free, open-source monitor for your *whole system* (CPU, RAM, disk, battery, and more). Pick Stats if you want everything in one app. Pick NetBar if you want a tiny network-only tool that also gives you a VPN country-flag check, interface locking, and a 12-month bandwidth history.
+
+**vs. [iStat Menus](https://bjango.com/mac/istatmenus/)** — The premium option ($). Beautiful and deep, but it's a full system suite. If you only watch your network, NetBar covers it for free in under 500 KB.
+
+**vs. Bandwidth+** — Free Mac App Store app focused on usage per Wi-Fi network. NetBar adds live speed always visible in the menu bar, VPN flag verification, interface lock, and a 12-month history — no App Store account required.
+
+**vs. MenuMeters** — The classic open-source menu bar monitor. The original is no longer maintained on modern macOS. NetBar is a native Swift app built for macOS 13+.
 
 | | NetBar | Typical paid menu bar monitor |
 |---|---|---|
@@ -176,6 +209,15 @@ Have an idea? [Open an issue](https://github.com/mh-sudo/NetBar/issues) or send 
 ---
 
 ## FAQ
+
+**Is there a free app that shows internet speed in the Mac menu bar?**
+Yes — that's exactly what NetBar is. Free, open source, and it shows live upload and download speed in your menu bar. Install it with Homebrew: `brew install --cask netbar` (after tapping the repo — see [Install](#install)).
+
+**How do I show upload and download speed on my Mac?**
+Install NetBar and it lives in your menu bar permanently — no window to open, no terminal to run. macOS 13 (Ventura) or newer, Intel or Apple Silicon.
+
+**Is NetBar a good free alternative to iStat Menus?**
+If you only need network monitoring, yes. iStat Menus is a paid full-system suite; NetBar covers network speed, VPN flag verification, and bandwidth usage for free. If you need CPU, RAM, disk, and temperature monitoring too, look at [Stats](https://github.com/exelban/stats).
 
 **Does NetBar work on Intel Macs?**
 Yes, macOS 13.0+, Intel or Apple Silicon.
