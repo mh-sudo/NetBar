@@ -156,14 +156,7 @@ class MenuBarView: NSView {
         }
     }
     
-    override func mouseDown(with event: NSEvent) {
-        // Pass click to the status item's button so the menu appears
-        super.mouseDown(with: event)
-        if let menu = self.enclosingMenuItem?.menu {
-            menu.popUp(positioning: nil, at: NSPoint.zero, in: self)
-        } else {
-            // Forward event if wrapped in NSStatusBarButton
-            self.nextResponder?.mouseDown(with: event)
-        }
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        nil
     }
 }
